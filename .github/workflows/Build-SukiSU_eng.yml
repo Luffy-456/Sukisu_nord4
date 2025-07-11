@@ -299,6 +299,22 @@ jobs:
             fi
           fi
 
+      - name: Fix Bazel module_outs for ZRAM
+        if: ${{ github.event.inputs.ZRAM == 'true' }}
+        run: |
+          echo "ZRAM is enabled. Injecting zram.ko and zsmalloc.ko into module_outs..."
+          BUILD_FILE="kernel_workspace/kernel_platform/msm-kernel/BUILD.bazel"
+          if [ -f "$BUILD_FILE" ]; then
+            # Avoid duplicate entries
+            grep -q "drivers/block/zram/zram.ko" "$BUILD_FILE" || \
+              sed -i '/module_outs = \[/a \ \ \ \ "drivers/block/zram/zram.ko",' "$BUILD_FILE"
+            grep -q "mm/zsmalloc.ko" "$BUILD_FILE" || \
+              sed -i '/module_outs = \[/a \ \ \ \ "mm/zsmalloc.ko",' "$BUILD_FILE"
+          else
+            echo "::error::Cannot patch module_outs, BUILD.bazel not found!"
+            exit 1
+          fi
+
       - name: Build kernel
         if: ${{ github.event.inputs.CPU == 'sm8650' || github.event.inputs.CPU == 'sm7675' }}
         run: |
