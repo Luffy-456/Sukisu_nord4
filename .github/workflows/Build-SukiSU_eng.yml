@@ -377,29 +377,34 @@ jobs:
       - name: Apply patch_linux and replace Image
         if: ${{ github.event.inputs.KPM == 'true' }}
         run: |
-             image_path=$(find kernel_workspace/kernel_platform -type f -name Image | grep -E 'dist|boot' | head -n1)
-    
-              if [ ! -f "$image_path" ]; then
-              echo "Error: Image file not found"
-               exit 1
-               fi
+          # Find the compiled kernel Image in a build output directory
+          image_path=$(find kernel_workspace/kernel_platform -type f -name Image | grep -E 'dist|boot' | head -n1)
 
-             echo "Found Image at $image_path"
-             image_dir=$(dirname "$image_path")
-              cd "$image_dir"
+          # Exit with an error if the Image file wasn't found
+          if [ ! -f "$image_path" ]; then
+          echo "::error::Kernel Image file not found in a 'dist' or 'boot' directory."
+          exit 1
+          fi
 
-             curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU_patch/refs/heads/main/kpm/patch_linux" -o patch_linux
-             chmod +x patch_linux
-             ./patch_linux
+          echo "Found Image at: $image_path"
+          image_dir=$(dirname "$image_path")
+          cd "$image_dir"
 
-             if [ -f oImage ]; then
-             rm -f Image
-             mv oImage Image
-             cp Image $GITHUB_WORKSPACE/AnyKernel3/Image
-             else
-             echo "oImage not found after patch"
-             exit 1
-             fi
+          # Download and execute the patcher
+          curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU_patch/refs/heads/main/kpm/patch_linux" -o patch_linux
+          chmod +x patch_linux
+          ./patch_linux
+
+          # Verify the patcher created the output file 'oImage' before proceeding
+          if [ -f oImage ]; then
+          echo "Patch successful. Replacing original Image."
+          rm -f Image
+          mv oImage Image
+          cp Image $GITHUB_WORKSPACE/AnyKernel3/Image
+          else
+          echo "::error::'oImage' not found after running patch_linux. Patching failed."
+          exit 1
+          fi
       # Download SUSFS module (CI)
       - name: Download Latest SUSFS Module from CI
         if: ${{ github.event.inputs.SUSFS_CI == 'true' }}
