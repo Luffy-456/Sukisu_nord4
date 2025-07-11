@@ -377,15 +377,29 @@ jobs:
       - name: Apply patch_linux and replace Image
         if: ${{ github.event.inputs.KPM == 'true' }}
         run: |
-          cd /home/runner/work/Action_OnePlus_MKSU_SUSFS/Action_OnePlus_MKSU_SUSFS/kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-${{ github.event.inputs.BUILD_METHOD }}/dist
+             image_path=$(find kernel_workspace/kernel_platform -type f -name Image | grep -E 'dist|boot' | head -n1)
+    
+              if [ ! -f "$image_path" ]; then
+              echo "Error: Image file not found"
+               exit 1
+               fi
 
-          curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU_patch/refs/heads/main/kpm/patch_linux" -o patch_linux
-          chmod +x patch_linux
-          ./patch_linux
-          rm -f Image
-          mv oImage Image
-          cp Image $GITHUB_WORKSPACE/AnyKernel3/Image
+             echo "Found Image at $image_path"
+             image_dir=$(dirname "$image_path")
+              cd "$image_dir"
 
+             curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU_patch/refs/heads/main/kpm/patch_linux" -o patch_linux
+             chmod +x patch_linux
+             ./patch_linux
+
+             if [ -f oImage ]; then
+             rm -f Image
+             mv oImage Image
+             cp Image $GITHUB_WORKSPACE/AnyKernel3/Image
+             else
+             echo "oImage not found after patch"
+             exit 1
+             fi
       # Download SUSFS module (CI)
       - name: Download Latest SUSFS Module from CI
         if: ${{ github.event.inputs.SUSFS_CI == 'true' }}
