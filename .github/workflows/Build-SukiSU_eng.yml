@@ -21,7 +21,7 @@ on:
         description: "Kernel Android version"
         type: string
         required: true
-        default: android15
+        default: android14
       KERNEL_VERSION:
        type: string
        description: "Kernel version"
