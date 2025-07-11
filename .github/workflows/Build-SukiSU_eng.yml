@@ -4,38 +4,34 @@ on:
     inputs:
       CPU:
         description: "Branch"
+        type: string
         required: true
         default: sm7675
       FEIL:
         description: "Configuration file"
+        type: string
         required: true
         default: oneplus_nord_4_v
       CPUD:
         description: "Processor codename"
+        type: string
         required: true
         default: pineapple
       ANDROID_VERSION:
         description: "Kernel Android version"
+        type: string
         required: true
         default: android15
       KERNEL_VERSION:
-       type: choice
+       type: string
        description: "Kernel version"
        required: true
-       default: "5.15"
-       options:
-         - "5.10"
-         - "5.15"
-         - "6.1"
-         - "6.6"
+       default: "6.1"
       BUILD_METHOD:
-        type: choice
+        type: string
         description: "Build method"
         required: true
         default: gki
-        options:
-          - gki
-          - perf
       SUSFS_CI:
         type: boolean
         description: "Download SUSFS module using CI build?"
@@ -75,8 +71,8 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config --global user.name "Numbersf"
-          git config --global user.email "263623064@qq.com"
+          git config --global user.name "Luffy-456"
+          git config --global user.email "anshuman567.in@gmail.com"
 
       - name: Install dependencies
         run: |
